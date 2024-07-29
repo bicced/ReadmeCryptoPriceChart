@@ -37,6 +37,7 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/<your-username>/<your-repo>.git
         git add README.md
         git commit -m "Update README with latest DEX data" || echo "No changes to commit"
-        git push || echo "Failed to push changes"
+        git push
