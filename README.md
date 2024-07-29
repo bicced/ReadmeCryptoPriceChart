@@ -2,7 +2,7 @@
 Readme profile linked to Dexscreener crypto price chart
 
 
-  [![Dexscreener](https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png)](https://dexscreener.com/solana/AHTTzwf3GmVMJdxWM8v2MSxyjZj8rQR6hyAC3g9477Yj?embed=1&theme=dark&trades=0&info=0)
+  [![Dexscreener](https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png)](https://bicced.github.io/readme-crypto-price-chart/)
 
 <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
 <foreignObject width="100" height="100">
