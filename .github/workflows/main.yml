@@ -10,24 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set up Node.js environment
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-
-    - name: Checkout repository
-      uses: actions/checkout@v3
 
     # - name: Install curl and jq
     #   run: |
     #     apt-get update
     #     apt-get install -y curl jq
 
-    - name: Update README
+    - name: Fetch OHLCV data
       run: |
-        response=$(curl -s 'https://api.dexscreener.com/latest/dex/pairs/bsc/0x7213a321F1855CF1779f42c0CD85d3D95291D34C,0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae')
-        data=$(echo "$response" | jq -r '.pairs[] | "Pair: \(.baseToken.symbol) - \(.quoteToken.symbol)\nPrice: \(.priceUsd) USD"')
-        echo -e "## Latest DEX Data\n\n$data" > README.md
+        response=$(curl -s 'https://api.geckoterminal.com/api/v2/networks/bsc/pools/0x7213a321F1855CF1779f42c0CD85d3D95291D34C/ohlcv/day?aggregate=1&limit=1000&currency=usd&token=base')
+        dates=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d | paste -sd, -)
+        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
+
+        chart=$(cat <<EOF
+        \```mermaid
+        xychart-beta
+            title "Daily Closing Prices"
+            x-axis [${dates}]
+            y-axis "Price (in USD)"
+            line [${closes}]
+        \```
+        EOF
+        )
+        echo -e "## Daily Closing Prices\n\n${chart}" > README.md
         echo "Updated README.md content:"
         cat README.md
 
