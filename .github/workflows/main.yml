@@ -1,0 +1,35 @@
+name: Update README with API Data
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Fetch API Data
+      id: fetch_api
+      run: |
+        response=$(curl -s 'https://api.dexscreener.com/latest/dex/pairs/bsc/0x7213a321F1855CF1779f42c0CD85d3D95291D34C,0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae')
+        echo "$response"
+        echo "::set-output name=data::$response"
+
+    - name: Update README
+      run: |
+        echo "$response"
+        data=$(echo $response | jq -r '.pairs[] | "Pair: \(.baseToken.symbol) - \(.quoteToken.symbol)\nPrice: \(.priceUsd) USD"')
+        echo "$data"
+        echo -e "## Latest DEX Data\n\n$data" > README.md
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add README.md
+        git commit -m "Update README with latest DEX data"
+        git push
