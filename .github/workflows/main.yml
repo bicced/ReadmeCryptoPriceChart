@@ -2,7 +2,7 @@ name: Update README with API Data
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour
+    - cron: '* * * * *' # Runs every hour
 
 jobs:
   update-readme:
