@@ -19,7 +19,7 @@ jobs:
     - name: Fetch OHLCV data
       env:
         CHAIN: eth #Specify the chain eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
-        POOL: 0xb125aa15Ad943D96e813E4A06d0c34716F897e26 #Specify the pool address
+        POOL: '0xb125aa15Ad943D96e813E4A06d0c34716F897e26' #Specify the pool address
         TIMEFRAME: day #Specify the timeframe day/hour/minute
         AGGREGATE: 1 #Specify the aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
         LIMIT: 1000 #Specify the limit 100 - 1000
