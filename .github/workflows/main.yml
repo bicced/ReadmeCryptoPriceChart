@@ -31,8 +31,15 @@ jobs:
         echo "Raw API response:"
         echo "$response"
 
-        dates=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d | paste -sd, -)
+        dates_array=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d)
         closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
+
+        total_dates=$(echo "$dates_array" | wc -l)
+        step=$((total_dates / 10))
+
+        selected_dates=$(echo "$dates_array" | awk -v step="$step" 'NR % step == 1')
+
+        dates=$(echo "$selected_dates" | paste -sd, -)
 
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
@@ -43,7 +50,6 @@ jobs:
           title "OHLCV Data"
           x-axis [${dates}]
           y-axis "Closing Prices" ${min_close} --> ${max_close}
-          bar [${closes}]
           line [${closes}]
         \`\`\`
         EOF)
