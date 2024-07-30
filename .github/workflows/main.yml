@@ -2,7 +2,7 @@ name: Update README with Crypto Price Chart
 
 on:
   schedule:
-    - cron: "* * * * *" # Runs once every day
+    - cron: "* * * * *" # Runs once every day at midnight
 
 jobs:
   update-readme:
@@ -29,7 +29,6 @@ jobs:
               
           echo "Raw API response:"
           echo "$response"
-
 
           # Extracting dates and closing prices
           dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
@@ -84,7 +83,6 @@ jobs:
             line ['"$closes"']\
           ```/}' README.md
 
-
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,3 +93,4 @@ jobs:
           git add README.md
           git commit -m "Update README with latest DEX data" || echo "No changes to commit"
           git push
+          
