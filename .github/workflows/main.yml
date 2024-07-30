@@ -1,4 +1,4 @@
-name: Update README with API Data
+name: Update README with Crypto Price Chart
 
 on:
   schedule:
@@ -7,21 +7,19 @@ on:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-
     - name: Fetch OHLCV data
       env: 
-        TITLE: WETH/USDC
+        TITLE: WETH/USDC #Specify the title of the chart
         CHAIN: eth #Specify the chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
         POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' #Specify the pool address - currently WETH/USDC pool
         TIMEFRAME: day #Specify the timeframe - day/hour/minute
         AGGREGATE: 1 #Specify the aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
-        LIMIT: 365 #Specify the limit - 100 to 1000
+        LIMIT: 365 #Specify the limit - 100 to 1000, changing may need some modification to code below to fit the data
       run: |
         apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
         
@@ -45,14 +43,14 @@ jobs:
           date="${dates_array[$i]}"
           close="${closes_array[$i]}"
           month_year=$(date -d @$date +%b-%y)
-          day=$(date -d @$date +%d)
+          day=$(date -d @$date +%d | sed 's/^0*//')  # Remove leading zero
 
           # Check if this is the first occurrence of the month or an earlier date within the month
           if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
             formatted_dates+=("$month_year")
             first_closes+=("$close")
             seen_months+=("$month_year")
-          elif [[ " ${seen_months[@]} " =~ " ${month_year} " && "$day" -eq "01" ]]; then
+          elif [[ "$day" -eq "1" ]]; then
             formatted_dates[-1]="$month_year"
             first_closes[-1]="$close"
           fi
@@ -83,9 +81,8 @@ jobs:
         \`\`\`
         EOF)
 
-        echo -e "## OHLCV Data Visualization\n\n${chart}" > README.md
-        echo "Updated README.md content:"
-        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- OHLCV_CHART_START -->\n'"$chart"'\n<!-- OHLCV_CHART_END -->' README.md
+        echo -e "$chart"
+        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- CHART_START -->\n'"$chart"'\n<!-- CHART_END -->' README.md
 
     - name: Commit and push changes
       env:
