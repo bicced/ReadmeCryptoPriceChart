@@ -20,6 +20,8 @@ To set up this project:
 
 ### Yaml Configuration (`main.yml`)
 
+Inside the `main.yml` file, you can the set configurations
+
 ```yaml
   on:
   schedule:
@@ -49,7 +51,7 @@ To set up this project:
 <!-- CHART_START -->
 *Chart will be dynamically inserted here.*
 <!-- CHART_END -->
-
+```
 
 3. **Automated Updates**: Using GitHub Actions, the script runs on a defined schedule (e.g., daily) to ensure the data remains current.
 
