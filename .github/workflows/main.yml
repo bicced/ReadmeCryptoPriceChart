@@ -85,7 +85,7 @@ jobs:
 
         echo -e "## OHLCV Data Visualization\n\n${chart}" > README.md
         echo "Updated README.md content:"
-        cat README.md
+        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- OHLCV_CHART_START -->\n'"$chart"'\n<!-- OHLCV_CHART_END -->' README.md
 
     - name: Commit and push changes
       env:
