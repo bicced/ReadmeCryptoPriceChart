@@ -89,20 +89,30 @@ jobs:
           # Escape special characters in chart_content
           escaped_content=$(printf '%s\n' "$chart_content" | sed -e 's/[\/&]/\\&/g')
 
-          # Update README.md with the new chart content (only first instance)
-          sed -i.bak '
-          /<!-- CHART_START -->/,/<!-- CHART_END -->/{
-            /<!-- CHART_START -->/!{
-              /<!-- CHART_END -->/!d
+          # Create a temporary file with the new content
+          temp_file=$(mktemp)
+          awk -v chart="$escaped_content" '
+            /<!-- CHART_START -->/ {
+              print $0
+              print chart
+              in_chart = 1
+              next
             }
-            /<!-- CHART_START -->/c\
-          <!-- CHART_START -->\
-          '"$escaped_content"'
-          }
-          ' README.md
+            /<!-- CHART_END -->/ {
+              print $0
+              in_chart = 0
+              next
+            }
+            !in_chart {
+              print $0
+            }
+          ' README.md > "$temp_file"
 
-          # Clean up the backup file
-          rm README.md.bak
+          # Replace the original file with the new content
+          mv "$temp_file" README.md
+
+          echo "Content of README after update:"
+          cat README.md
 
       - name: Commit and push changes
         env:
