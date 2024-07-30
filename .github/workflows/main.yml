@@ -92,15 +92,21 @@ jobs:
           # Create a temporary file with the new content
           temp_file=$(mktemp)
           awk -v chart="$escaped_content" '
+            BEGIN { inserted = 0 }
             /<!-- CHART_START -->/ {
-              print $0
-              print chart
-              in_chart = 1
+              if (inserted == 0) {
+                print $0
+                print chart
+                in_chart = 1
+                inserted = 1
+              }
               next
             }
             /<!-- CHART_END -->/ {
-              print $0
-              in_chart = 0
+              if (in_chart) {
+                print $0
+                in_chart = 0
+              }
               next
             }
             !in_chart {
