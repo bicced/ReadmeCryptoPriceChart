@@ -34,27 +34,35 @@ jobs:
 
         # Extracting dates and closing prices
         dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
-        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
+        closes_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]'))
 
         formatted_dates=()
+        first_closes=()
+        seen_months=()
 
-        # Format the dates accordingly and ensure chronological order
-        for date in "${dates_array[@]}"; do
-          month=$(date -d @$date +%m)
-          if [ "$month" -eq "01" ]; then
-            formatted_dates+=("$(date -d @$date +%Y)")
-          else
-            formatted_dates+=("$(date -d @$date +%b)")
+        # Format the dates as "Mon-YY" and filter for the first closing price of each month
+        for i in "${!dates_array[@]}"; do
+          date="${dates_array[$i]}"
+          close="${closes_array[$i]}"
+          month_year=$(date -d @$date +%b-%y)
+
+          if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
+            formatted_dates+=("$month_year")
+            first_closes+=("$close")
+            seen_months+=("$month_year")
           fi
         done
+
+        # Join the formatted dates and first closing prices into comma-separated strings
+        dates=$(printf "%s," "${formatted_dates[@]}")
+        dates=${dates%,} # Remove the trailing comma
+
+        closes=$(printf "%s," "${first_closes[@]}")
+        closes=${closes%,} # Remove the trailing comma
 
         # Calculate min and max close prices for y-axis range
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
-
-        # Join the formatted dates into a comma-separated string
-        dates=$(printf "%s," "${formatted_dates[@]}")
-        dates=${dates%,} # Remove the trailing comma
 
         chart=$(cat <<EOF
         \`\`\`mermaid
