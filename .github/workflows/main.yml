@@ -30,6 +30,7 @@ jobs:
         echo "Raw API response:"
         echo "$response"
 
+        
         # Extracting dates and closing prices
         dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
         closes_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]'))
@@ -43,14 +44,17 @@ jobs:
           date="${dates_array[$i]}"
           close="${closes_array[$i]}"
           month_year=$(date -d @$date +%b-%y)
-          day=$(date -d @$date +%d | sed 's/^0*//')  # Remove leading zero
+          day=$(date -d @$date +%d)
+
+          # Ensure `day` is treated as an integer, removing leading zeros
+          day=$((10#$day))
 
           # Check if this is the first occurrence of the month or an earlier date within the month
           if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
             formatted_dates+=("$month_year")
             first_closes+=("$close")
             seen_months+=("$month_year")
-          elif [[ "$day" -eq "1" ]]; then
+          elif [[ "$day" -eq 1 ]]; then
             formatted_dates[-1]="$month_year"
             first_closes[-1]="$close"
           fi
@@ -81,7 +85,10 @@ jobs:
         \`\`\`
         EOF)
 
-        echo -e "$chart"
+        # Display the chart (for debugging or confirmation purposes)
+        echo "$chart"
+
+        # Replace the content in README.md between custom tags
         sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- CHART_START -->\n'"$chart"'\n<!-- CHART_END -->' README.md
 
     - name: Commit and push changes
