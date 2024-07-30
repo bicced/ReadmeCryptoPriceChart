@@ -76,15 +76,13 @@ jobs:
           max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
           # Generate the chart content
-          sed -i '/<!-- CHART_START -->/{n;:a;/<!-- CHART_END -->/!{N;ba};s/\(<!-- CHART_START -->\)[^<]*<!-- CHART_END -->/\1\
-          ```mermaid\
+          sed -i '/<!-- CHART_START -->/{:a;n;/<!-- CHART_END -->/!{ba};s/.*/```mermaid\
           xychart-beta\
             title "'"$TITLE"'"\
             x-axis ['"$dates"']\
             y-axis "Closing Prices" '"$min_close"' --> '"$max_close"'\
             line ['"$closes"']\
-          ```\
-          /;:b;n;/<!-- CHART_END -->/bb;}' README.md
+          ```/}' README.md
 
 
       - name: Commit and push changes
