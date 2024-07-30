@@ -1,6 +1,6 @@
 # readme-crypto-price-chart
 
-A minimal implementation for periodically updated live crypto price charts embedded directly in your README. The prices are sourced from CoinGecko's free public APIs and automatically updated using GitHub workflows.
+A minimal implementation for live crypto price charts embedded directly in your README. The prices are sourced from CoinGecko's free public APIs and automatically periodically updated using GitHub workflows.
 
 ## Chart Data
 <!-- CHART_START -->
@@ -46,7 +46,6 @@ Inside the `main.yml` file, you can the set configurations
 
 2. **Data Processing**: It formats the data and inserts it into the README between the `<!-- CHART_START -->` and `<!-- CHART_END -->` tags.
 
-## Chart Data
 ```markdown
 <!-- CHART_START -->
 *Chart will be dynamically inserted here.*

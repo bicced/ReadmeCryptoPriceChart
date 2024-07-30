@@ -12,7 +12,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Fetch OHLCV data
+    - name: Fetch Chart data
       env: 
         TITLE: WETH/USDC #Specify the title of the chart
         CHAIN: eth #Specify the chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
@@ -76,13 +76,13 @@ jobs:
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
         chart=$(cat <<EOF
-        \`\`\`mermaid
-        xychart-beta
+        ```mermaid
+          xychart-beta
           title "${TITLE}"
           x-axis [${dates}]
           y-axis "Closing Prices" ${min_close} --> ${max_close}
           line [${closes}]
-        \`\`\`
+        ```
         EOF)
 
         # Display the chart (for debugging or confirmation purposes)
