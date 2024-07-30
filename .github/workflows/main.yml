@@ -53,6 +53,10 @@ jobs:
           fi
         done
 
+        # Reverse the arrays to show oldest dates first
+        formatted_dates=($(printf "%s\n" "${formatted_dates[@]}" | tac))
+        first_closes=($(printf "%s\n" "${first_closes[@]}" | tac))
+
         # Join the formatted dates and first closing prices into comma-separated strings
         dates=$(printf "%s," "${formatted_dates[@]}")
         dates=${dates%,} # Remove the trailing comma
