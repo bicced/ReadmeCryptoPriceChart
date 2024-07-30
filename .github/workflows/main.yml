@@ -35,13 +35,18 @@ jobs:
         dates=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d | paste -sd, -)
         closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
 
+        min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
+        max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
+
         chart=$(cat <<EOF
-          \`\`\`mermaid
-          graph TD
-            A["OHLCV Data"]
-            A --> B["Dates: ${dates}"]
-            A --> C["Closing Prices: ${closes}"]
-          \`\`\`
+        \`\`\`mermaid
+        xychart-beta
+          title "OHLCV Data"
+          x-axis [${dates}]
+          y-axis "Closing Prices" ${min_close} --> ${max_close}
+          bar [${closes}]
+          line [${closes}]
+        \`\`\`
         EOF)
 
         echo -e "## OHLCV Data Visualization\n\n${chart}" > README.md
