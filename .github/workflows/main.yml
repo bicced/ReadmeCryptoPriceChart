@@ -75,13 +75,20 @@ jobs:
           max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
           # Generate the chart content
-          sed -i '/<!-- CHART_START -->/{:a;n;/<!-- CHART_END -->/!{ba};s/.*/```mermaid\
-          xychart-beta\
-            title "'"$TITLE"'"\
-            x-axis ['"$dates"']\
-            y-axis "Closing Prices" '"$min_close"' --> '"$max_close"'\
-            line ['"$closes"']\
-          ```/}' README.md
+          chart_content=$(cat <<EOF
+          \`\`\`mermaid
+          xychart-beta
+            title "$TITLE"
+            x-axis ['$dates']
+            y-axis "Closing Prices" $min_close --> $max_close
+            line ['$closes']
+          \`\`\`
+          EOF
+          )
+
+          # Insert the chart content into README.md
+          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- CHART_START -->\n'"$chart_content"'\n<!-- CHART_END -->' README.md
+
 
       - name: Commit and push changes
         env:
@@ -93,4 +100,3 @@ jobs:
           git add README.md
           git commit -m "Update README with latest DEX data" || echo "No changes to commit"
           git push
-          
