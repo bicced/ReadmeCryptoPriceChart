@@ -86,14 +86,17 @@ jobs:
           EOF
           )
 
+          # Escape special characters in chart_content
+          escaped_content=$(printf '%s\n' "$chart_content" | sed -e 's/[]\/$*.^[]/\\&/g' | sed -e ':a;N;$!ba;s/\n/\\n/g')
+
           # Update README.md with the new chart content (only first instance)
-          sed -i.bak '
+          sed -i.bak "
           /<!-- CHART_START -->/,/<!-- CHART_END -->/{
-            s/<!-- CHART_START -->.*<!-- CHART_END -->/<!-- CHART_START -->'"$(sed 's/[\/&]/\\&/g' <<< "$chart_content")"'<!-- CHART_END -->/
+            s/<!-- CHART_START -->.*<!-- CHART_END -->/<!-- CHART_START -->$escaped_content<!-- CHART_END -->/
             t
             b
           }
-          ' README.md
+          " README.md
 
           # Clean up the backup file
           rm README.md.bak
