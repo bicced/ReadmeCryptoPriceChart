@@ -15,7 +15,8 @@ jobs:
 
 
     - name: Fetch OHLCV data
-      env:
+      env: 
+        TITLE: WETH/USDC
         CHAIN: eth #Specify the chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
         POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' #Specify the pool address - currently WETH/USDC pool
         TIMEFRAME: day #Specify the timeframe - day/hour/minute
@@ -33,9 +34,11 @@ jobs:
 
         # Extracting dates and closing prices
         dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
+        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
+
         formatted_dates=()
 
-        # Format the dates accordingly
+        # Format the dates accordingly and ensure chronological order
         for date in "${dates_array[@]}"; do
           month=$(date -d @$date +%m)
           if [ "$month" -eq "01" ]; then
@@ -45,23 +48,18 @@ jobs:
           fi
         done
 
-        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
-
-        # Deduplicate dates
-        unique_dates=($(printf "%s\n" "${formatted_dates[@]}" | uniq))
-
         # Calculate min and max close prices for y-axis range
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
-        # Join the unique dates array into a comma-separated string
-        dates=$(printf "%s," "${unique_dates[@]}")
+        # Join the formatted dates into a comma-separated string
+        dates=$(printf "%s," "${formatted_dates[@]}")
         dates=${dates%,} # Remove the trailing comma
 
         chart=$(cat <<EOF
         \`\`\`mermaid
         xychart-beta
-          title "OHLCV Data"
+          title "${TITLE}"
           x-axis [${dates}]
           y-axis "Closing Prices" ${min_close} --> ${max_close}
           line [${closes}]
