@@ -86,8 +86,17 @@ jobs:
           EOF
           )
 
+          echo "Generated chart content:"
+          echo "$chart_content"
+
           # Escape special characters in chart_content
           escaped_content=$(printf '%s\n' "$chart_content" | sed -e 's/[]\/$*.^[]/\\&/g' | sed -e ':a;N;$!ba;s/\n/\\n/g')
+
+          echo "Escaped content:"
+          echo "$escaped_content"
+
+          echo "Content of README before sed:"
+          cat README.md
 
           # Update README.md with the new chart content (only first instance)
           sed -i.bak "
@@ -97,6 +106,9 @@ jobs:
             b
           }
           " README.md
+
+          echo "Content of README after sed:"
+          cat README.md
 
           # Clean up the backup file
           rm README.md.bak
