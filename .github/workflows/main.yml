@@ -1,7 +1,6 @@
 name: Update README with API Data
 
 on:
-  # push
   schedule:
     - cron: '* * * * *' # Runs every minute
 
@@ -46,6 +45,13 @@ jobs:
           y-axis "Closing Prices" ${min_close} --> ${max_close}
           bar [${closes}]
           line [${closes}]
+          xAxis {
+            showLabel: true,
+            labelFontSize: 12,
+            labelPadding: 10,
+            showTick: true
+          }
+          width 1000
         \`\`\`
         EOF)
 
