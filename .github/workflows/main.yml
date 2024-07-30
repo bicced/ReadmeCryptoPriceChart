@@ -75,21 +75,14 @@ jobs:
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
-        chart=$(cat <<'EOF'
-        ```mermaid
-          xychart-beta
-          title "${TITLE}"
-          x-axis [${dates}]
-          y-axis "Closing Prices" ${min_close} --> ${max_close}
-          line [${closes}]
-        EOF)
-
-        # Display the chart (for debugging or confirmation purposes)
-        echo "$chart"
-
-        # Replace the content in README.md between custom tags
-        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c<!-- CHART_START -->\
-        '"$chart"'\
+        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- CHART_START -->\
+        ```mermaid\
+        xychart-beta\
+          title "'"${TITLE}"'"\
+          x-axis ['"${dates}"']\
+          y-axis "Closing Prices" '"${min_close}"' --> '"${max_close}"'\
+          line ['"${closes}"']\
+        ```\
         <!-- CHART_END -->' README.md
 
     - name: Commit and push changes
