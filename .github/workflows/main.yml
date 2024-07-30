@@ -45,11 +45,16 @@ jobs:
           date="${dates_array[$i]}"
           close="${closes_array[$i]}"
           month_year=$(date -d @$date +%b-%y)
+          day=$(date -d @$date +%d)
 
+          # Check if this is the first occurrence of the month or an earlier date within the month
           if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
             formatted_dates+=("$month_year")
             first_closes+=("$close")
             seen_months+=("$month_year")
+          elif [[ " ${seen_months[@]} " =~ " ${month_year} " && "$day" -eq "01" ]]; then
+            formatted_dates[-1]="$month_year"
+            first_closes[-1]="$close"
           fi
         done
 
