@@ -77,18 +77,21 @@ jobs:
 
           # Generate the chart content
           chart=$(cat <<EOF
-          \`\`\`mermaid
-          xychart-beta
-            title "${TITLE}"
-            x-axis [${dates}]
-            y-axis "Closing Prices" ${min_close} --> ${max_close}
-            line [${closes}]
-          \`\`\`
+          ```mermaid
+            xychart-beta
+              title "${TITLE}"
+              x-axis [${dates}]
+              y-axis "Closing Prices" ${min_close} --> ${max_close}
+              line [${closes}]
+          ```
           EOF
           )
 
-          # Replace the content between the first occurrence of custom tags
-          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c <!-- CHART_START -->\n'"$chart"'\n<!-- CHART_END -->' README.md
+          # Safely replace the content between the first occurrence of custom tags
+          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\
+          <!-- CHART_START -->\
+          '"$chart"'\
+          <!-- CHART_END -->' README.md
 
       - name: Commit and push changes
         env:
