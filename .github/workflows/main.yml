@@ -48,7 +48,7 @@ jobs:
           if (( i % interval == 0 )); then
             visible_dates+=("${dates_array[$i]}")
           else
-            visible_dates+=("\"\"")
+            visible_dates+=("\" \"")
           fi
         done
 
