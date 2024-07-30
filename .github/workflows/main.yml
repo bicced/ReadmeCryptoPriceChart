@@ -20,7 +20,7 @@ jobs:
         POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' #Specify the pool address - currently WETH/USDC pool
         TIMEFRAME: day #Specify the timeframe - day/hour/minute
         AGGREGATE: 1 #Specify the aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
-        LIMIT: 100 #Specify the limit - 100 to 1000
+        LIMIT: 365 #Specify the limit - 100 to 1000
       run: |
         apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
         
@@ -31,33 +31,32 @@ jobs:
         echo "Raw API response:"
         echo "$response"
 
-        # Extracting all dates and closing prices
-        dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d))
-        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
+        # Extracting dates and closing prices
+        dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
+        formatted_dates=()
 
-        # Determine the interval for showing dates
-        total_dates=${#dates_array[@]}
-        interval=$((total_dates / 10))
-        if [ $interval -lt 1 ]; then
-          interval=1
-        fi
-
-        # Constructing the x-axis with 10 dates and empty strings in between
-        visible_dates=()
-        for i in "${!dates_array[@]}"; do
-          if (( i % interval == 0 )); then
-            visible_dates+=("${dates_array[$i]}")
+        # Format the dates accordingly
+        for date in "${dates_array[@]}"; do
+          month=$(date -d @$date +%m)
+          if [ "$month" -eq "01" ]; then
+            formatted_dates+=("$(date -d @$date +%Y)")
           else
-            visible_dates+=("\" \"")
+            formatted_dates+=("$(date -d @$date +%b)")
           fi
         done
 
-        # Join the visible dates array into a comma-separated string
-        dates=$(printf "%s," "${visible_dates[@]}")
-        dates=${dates%,} # Remove the trailing comma
+        closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
 
+        # Deduplicate dates
+        unique_dates=($(printf "%s\n" "${formatted_dates[@]}" | uniq))
+
+        # Calculate min and max close prices for y-axis range
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
+
+        # Join the unique dates array into a comma-separated string
+        dates=$(printf "%s," "${unique_dates[@]}")
+        dates=${dates%,} # Remove the trailing comma
 
         chart=$(cat <<EOF
         \`\`\`mermaid
