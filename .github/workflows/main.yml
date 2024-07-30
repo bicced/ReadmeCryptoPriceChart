@@ -86,10 +86,19 @@ jobs:
           EOF
           )
 
+          # Write the chart content to a temporary file
+          echo "$chart_content" > chart_content.txt
+
           # Insert the chart content into README.md
-          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c\<!-- CHART_START -->\n'"$chart_content"'\n<!-- CHART_END -->' README.md
+          sed -i '' '/<!-- CHART_START -->/,/<!-- CHART_END -->/{
+            /<!-- CHART_START -->/!{
+              /<!-- CHART_END -->/!d
+            }
+          }' README.md
+          sed -i '' '/<!-- CHART_START -->/r chart_content.txt' README.md
 
-
+          # Clean up the temporary file
+          rm chart_content.txt
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
