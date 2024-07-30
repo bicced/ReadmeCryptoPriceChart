@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-    # - name: Install curl and jq
-    #   run: |
-    #     apt-get update
-    #     apt-get install -y curl jq
-
     - name: Fetch OHLCV data
       env:
         CHAIN: eth #Specify the chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
