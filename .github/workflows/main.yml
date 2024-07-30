@@ -75,7 +75,7 @@ jobs:
           min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
           max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
-          # Generate the chart data dynamically
+          # Generate the chart content
           chart=$(cat <<EOF
           \`\`\`mermaid
           xychart-beta
@@ -84,14 +84,12 @@ jobs:
             y-axis "Closing Prices" ${min_close} --> ${max_close}
             line [${closes}]
           \`\`\`
-          EOF)
+          EOF
+          )
 
-          # Replace the content in README.md between the first occurrence of the custom tags
-          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/{
-            /<!-- CHART_START -->/{p; i'"$chart"'
-            };d
-          }' README.md
-          
+          # Replace the content between the first occurrence of custom tags
+          sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/c <!-- CHART_START -->\n'"$chart"'\n<!-- CHART_END -->' README.md
+
       - name: Commit and push changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
