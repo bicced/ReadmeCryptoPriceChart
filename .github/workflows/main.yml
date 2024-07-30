@@ -11,34 +11,41 @@ jobs:
 
     steps:
 
-    # - name: Install curl and jq
-    #   run: |
-    #     apt-get update
-    #     apt-get install -y curl jq
+    - name: Install curl and jq
+      run: |
+        apt-get update
+        apt-get install -y curl jq
 
     - name: Fetch OHLCV data
       env:
-        CHAIN: eth #Specify the chain eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
-        POOL: '0xb125aa15Ad943D96e813E4A06d0c34716F897e26' #Specify the pool address
-        TIMEFRAME: day #Specify the timeframe day/hour/minute
+        CHAIN: eth #Specify the chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
+        POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' #Specify the pool address - currently WETH/USDC pool
+        TIMEFRAME: day #Specify the timeframe - day/hour/minute
         AGGREGATE: 1 #Specify the aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
-        LIMIT: 1000 #Specify the limit 100 - 1000
+        LIMIT: 1000 #Specify the limit - 100 to 1000
       run: |
-        response=$(curl -s 'https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}')
+        apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
+        
+        echo "$apiurl"
+
+        response=$(curl -s "$apiurl")
+            
+        echo "Raw API response:"
+        echo "$response"
+
         dates=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d | paste -sd, -)
         closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
 
         chart=$(cat <<EOF
-        \```mermaid
-        xychart-beta
-            title "Daily Closing Prices"
-            x-axis [${dates}]
-            y-axis "Price (in USD)"
-            line [${closes}]
-        \```
-        EOF
-        )
-        echo -e "## Daily Closing Prices\n\n${chart}" > README.md
+          \`\`\`mermaid
+          graph TD
+            A["OHLCV Data"]
+            A --> B["Dates: ${dates}"]
+            A --> C["Closing Prices: ${closes}"]
+          \`\`\`
+        EOF)
+
+        echo -e "## OHLCV Data Visualization\n\n${chart}" > README.md
         echo "Updated README.md content:"
         cat README.md
 
