@@ -11,10 +11,10 @@ jobs:
 
     steps:
 
-    - name: Install curl and jq
-      run: |
-        apt-get update
-        apt-get install -y curl jq
+    # - name: Install curl and jq
+    #   run: |
+    #     apt-get update
+    #     apt-get install -y curl jq
 
     - name: Fetch OHLCV data
       env:
