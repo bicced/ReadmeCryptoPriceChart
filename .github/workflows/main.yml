@@ -79,9 +79,9 @@ jobs:
           \`\`\`mermaid
           xychart-beta
             title "$TITLE"
-            x-axis ['$dates']
+            x-axis [$dates]
             y-axis "Closing Prices" $min_close --> $max_close
-            line ['$closes']
+            line [$closes]
           \`\`\`
           EOF
           )
