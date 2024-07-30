@@ -56,6 +56,9 @@ jobs:
         dates=$(printf "%s," "${visible_dates[@]}")
         dates=${dates%,} # Remove the trailing comma
 
+        min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
+        max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
+
         chart=$(cat <<EOF
         \`\`\`mermaid
         xychart-beta
