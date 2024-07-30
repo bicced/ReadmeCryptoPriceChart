@@ -2,97 +2,89 @@ name: Update README with Crypto Price Chart
 
 on:
   schedule:
-    - cron: '* * * * *' # Runs once every day
+    - cron: "* * * * *" # Runs once every day
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Fetch Chart data
-      env: 
-        TITLE: WETH/USDC # Title of the chart
-        CHAIN: eth # Chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
-        POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' # Pool pair address
-        TIMEFRAME: day # Timeframe - day/hour/minute
-        AGGREGATE: 1 # Aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
-        LIMIT: 365 # Limit - 100 to 1000, changing this may require modification to code below to fit the data
-      run: |
-        apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
-        
-        echo "$apiurl"
+      - name: Fetch Chart data
+        env:
+          TITLE: WETH/USDC # Title of the chart
+          CHAIN: eth # Chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
+          POOL: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640" # Pool pair address
+          TIMEFRAME: day # Timeframe - day/hour/minute
+          AGGREGATE: 1 # Aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
+          LIMIT: 365 # Limit - 100 to 1000, changing this may require modification to code below to fit the data
+        run: |
+          apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
 
-        response=$(curl -s "$apiurl")
-            
-        echo "Raw API response:"
-        echo "$response"
+          echo "$apiurl"
 
-        
-        # Extracting dates and closing prices
-        dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
-        closes_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]'))
-
-        formatted_dates=()
-        first_closes=()
-        seen_months=()
-
-        # Format the dates as "Mon-YY" and filter for the first closing price of each month
-        for i in "${!dates_array[@]}"; do
-          date="${dates_array[$i]}"
-          close="${closes_array[$i]}"
-          month_year=$(date -d @$date +%b-%y)
-          day=$(date -d @$date +%d)
-
-          # Ensure `day` is treated as an integer, removing leading zeros
-          day=$((10#$day))
-
-          # Check if this is the first occurrence of the month or an earlier date within the month
-          if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
-            formatted_dates+=("$month_year")
-            first_closes+=("$close")
-            seen_months+=("$month_year")
-          elif [[ "$day" -eq 1 ]]; then
-            formatted_dates[-1]="$month_year"
-            first_closes[-1]="$close"
-          fi
-        done
-
-        # Reverse the arrays to show oldest dates first
-        formatted_dates=($(printf "%s\n" "${formatted_dates[@]}" | tac))
-        first_closes=($(printf "%s\n" "${first_closes[@]}" | tac))
-
-        # Join the formatted dates and first closing prices into comma-separated strings
-        dates=$(printf "%s," "${formatted_dates[@]}")
-        dates=${dates%,} # Remove the trailing comma
-
-        closes=$(printf "%s," "${first_closes[@]}")
-        closes=${closes%,} # Remove the trailing comma
-
-        # Calculate min and max close prices for y-axis range
-        min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
-        max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
-
-        # Replace the content between the first occurrence of <!-- CHART_START --> and <!-- CHART_END -->
-        sed -i '/<!-- CHART_START -->/{n;:a;/<!-- CHART_END -->/!{N;ba};s/.*<!-- CHART_END -->/```mermaid\
-        xychart-beta\
-          title "'"$TITLE"'"\
-          x-axis ['"$dates"']\
-          y-axis "Closing Prices" '"$min_close"' --> '"$max_close"'\
-          line ['"$closes"']\
-        ```\
-        <!-- CHART_END -->/;q}' README.md
+          response=$(curl -s "$apiurl")
+              
+          echo "Raw API response:"
+          echo "$response"
 
 
-    - name: Commit and push changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-        git add README.md
-        git commit -m "Update README with latest DEX data" || echo "No changes to commit"
-        git push
+          # Extracting dates and closing prices
+          dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
+          closes_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]'))
+
+          formatted_dates=()
+          first_closes=()
+          seen_months=()
+
+          # Format the dates as "Mon-YY" and filter for the first closing price of each month
+          for i in "${!dates_array[@]}"; do
+            date="${dates_array[$i]}"
+            close="${closes_array[$i]}"
+            month_year=$(date -d @$date +%b-%y)
+            day=$(date -d @$date +%d)
+
+            # Ensure `day` is treated as an integer, removing leading zeros
+            day=$((10#$day))
+
+            # Check if this is the first occurrence of the month or an earlier date within the month
+            if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
+              formatted_dates+=("$month_year")
+              first_closes+=("$close")
+              seen_months+=("$month_year")
+            elif [[ "$day" -eq 1 ]]; then
+              formatted_dates[-1]="$month_year"
+              first_closes[-1]="$close"
+            fi
+          done
+
+          # Reverse the arrays to show oldest dates first
+          formatted_dates=($(printf "%s\n" "${formatted_dates[@]}" | tac))
+          first_closes=($(printf "%s\n" "${first_closes[@]}" | tac))
+
+          # Join the formatted dates and first closing prices into comma-separated strings
+          dates=$(printf "%s," "${formatted_dates[@]}")
+          dates=${dates%,} # Remove the trailing comma
+
+          closes=$(printf "%s," "${first_closes[@]}")
+          closes=${closes%,} # Remove the trailing comma
+
+          # Calculate min and max close prices for y-axis range
+          min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
+          max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
+
+          # Replace the content between the first occurrence of <!-- CHART_START --> and <!-- CHART_END -->
+          sed -i '/<!-- CHART_START -->/{n;:a;/<!-- CHART_END -->/!{N;ba};s/\(<!-- CHART_START -->\).*\(<!-- CHART_END -->\)/\1\n```mermaid\nxychart-beta\n  title "'"$TITLE"'"\n  x-axis ['"$dates"']\n  y-axis "Closing Prices" '"$min_close"' --> '"$max_close"'\n  line ['"$closes"']\n```\n\2/;q}' README.md
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add README.md
+          git commit -m "Update README with latest DEX data" || echo "No changes to commit"
+          git push
