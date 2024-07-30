@@ -31,26 +31,46 @@ jobs:
         echo "Raw API response:"
         echo "$response"
 
+        # Extracting dates and closing prices
         dates_array=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]' | xargs -I {} date -d @{} +%Y-%m-%d)
         closes=$(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]' | paste -sd, -)
 
+        # Calculate the step size to select 10 evenly spaced dates
         total_dates=$(echo "$dates_array" | wc -l)
         step=$((total_dates / 10))
 
-        selected_dates=$(echo "$dates_array" | awk -v step="$step" 'NR % step == 1')
+        # Build the x-axis labels with empty spaces for non-selected dates
+        x_axis_labels=""
+        for i in $(seq 1 $total_dates); do
+          if (( (i - 1) % step == 0 )); then
+            date=$(echo "$dates_array" | sed -n "${i}p")
+            x_axis_labels+="$date, "
+          else
+            x_axis_labels+="\" \", "
+          fi
+        done
+        # Remove the trailing comma and space
+        x_axis_labels=$(echo "$x_axis_labels" | sed 's/, $//')
 
-        dates=$(echo "$selected_dates" | paste -sd, -)
-
+        # Calculating min and max closing prices for the y-axis
         min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
+        # Generating the mermaid chart
         chart=$(cat <<EOF
         \`\`\`mermaid
         xychart-beta
           title "OHLCV Data"
-          x-axis [${dates}]
+          x-axis [${x_axis_labels}]
           y-axis "Closing Prices" ${min_close} --> ${max_close}
+          bar [${closes}]
           line [${closes}]
+          xAxis {
+            labelFontSize: 12,
+            labelPadding: 10,
+            showTick: true
+          }
+          width: 1000
         \`\`\`
         EOF)
 
