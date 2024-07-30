@@ -20,7 +20,7 @@ jobs:
         POOL: '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640' #Specify the pool address - currently WETH/USDC pool
         TIMEFRAME: day #Specify the timeframe - day/hour/minute
         AGGREGATE: 1 #Specify the aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
-        LIMIT: 1000 #Specify the limit - 100 to 1000
+        LIMIT: 100 #Specify the limit - 100 to 1000
       run: |
         apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
         
@@ -45,13 +45,6 @@ jobs:
           y-axis "Closing Prices" ${min_close} --> ${max_close}
           bar [${closes}]
           line [${closes}]
-          xAxis {
-            showLabel: true,
-            labelFontSize: 12,
-            labelPadding: 10,
-            showTick: true
-          }
-          width 1000
         \`\`\`
         EOF)
 
