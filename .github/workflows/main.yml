@@ -65,12 +65,6 @@ jobs:
           y-axis "Closing Prices" ${min_close} --> ${max_close}
           bar [${closes}]
           line [${closes}]
-          xAxis {
-            labelFontSize: 12,
-            labelPadding: 10,
-            showTick: true
-          }
-          width: 1000
         \`\`\`
         EOF)
 
