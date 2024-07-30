@@ -76,15 +76,14 @@ jobs:
         max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
 
         # Replace the content between the first occurrence of <!-- CHART_START --> and <!-- CHART_END -->
-        sed -i '/<!-- CHART_START -->/,/<!-- CHART_END -->/{x;/<!-- CHART_START -->/b;d;}' README.md
-        sed -i '/<!-- CHART_START -->/a\
+        sed -i -e '/<!-- CHART_START -->/{n;:a;/<!-- CHART_END -->/!{N;ba};s/<!-- CHART_END -->/<!-- CHART_END -->\
         ```mermaid\
         xychart-beta\
-          title "'"${TITLE}"'"\
-          x-axis ['"${dates}"']\
-          y-axis "Closing Prices" '"${min_close}"' --> '"${max_close}"'\
-          line ['"${closes}"']\
-        ```' README.md
+          title "'"$TITLE"'\
+          x-axis ['"$dates"']\
+          y-axis "Closing Prices" '"$min_close"' --> '"$max_close"'\
+          line ['"$closes"']\
+        ```/;q}' README.md
 
     - name: Commit and push changes
       env:
