@@ -3,7 +3,13 @@
 Display live cryptocurrency price charts directly in the README.md file. 
 
 <!-- CHART_START -->
-  *Chart will be dynamically inserted here.*
+```mermaid
+xychart-beta
+  title "WETH-USDC"
+  x-axis [Feb-1,Feb-15,Mar-1,Mar-15,Apr-1,Apr-15,May-1,May-15,Jun-1,Jun-15,Jul-1,Jul-15]
+  y-axis "Closing Prices" 2296.0446885069 --> 3819.38075388494
+  line [2296.0446885069,2818.91515756047,3438.35534213694,3736.1373634517,3504.3532147092,3100.95426847415,2973.3332502791,3035.35925312099,3819.38075388494,3563.50423684803,3435.37304391752,3482.40990196361]
+```
 <!-- CHART_END -->
 
 ## How it works
