@@ -1,25 +1,38 @@
 # readme-crypto-price-chart
 
-This project provides a solution for displaying live cryptocurrency price charts directly in the README.md file. A GitHub Actions workflow, scheduled to run at specified intervals, fetches the latest crypto prices from CoinGecko's public DEX APIs. The .md file is then automatically updated to reflect these prices, visualized as dynamic charts rendered using mermaid.js. This setup provides an up-to-date view of cryptocurrency price trends, all within the project's README.md.
+Display live cryptocurrency price charts directly in the README.md file. 
 
 <!-- CHART_START -->
   *Chart will be dynamically inserted here.*
 <!-- CHART_END -->
 
+## How it works
+
+This project uses a GitHub Actions workflow to periodically fetch the latest cryptocurrency prices from CoinGecko's public DEX APIs. The data is processed and used to update this README.md file, rendering a chart with the latest information using mermaid.js.
+
+The workflow is defined in the `main.yml` file, located in the `.github/workflows` directory. It runs on a schedule, specified using cron syntax, and updates the chart data between the `<!-- CHART_START -->` and `<!-- CHART_END -->` markers in the README.md file.
+
 ## How to Set Up
 
 To set up this project:
 
-1. **Create a Workflow**: Add a `main.yml` file in the `.github/workflows` directory of your repository.
+1. **Clone the Repository**: Clone this repository that includes the `main.yml` file in the `.github/workflows` directory.
 
-2. **Ensure Write Permissions**: Make sure your repository has the necessary permissions to update the README file. Under the repository's - Settings > Actions > General > Workflow permissions
+2. **Ensure Write Permissions**: Grant the repository write permissions to update the README.md file. You can do this by navigating to the repository's Settings > Actions > General > Workflow permissions.
 
-3. **Customize Your Setup**:
-   - You can modify settings in the `main.yml` file
+3. **Customize Your Setup**: You can modify various settings in the `main.yml` file, such as the cryptocurrency pair, chain, and update frequency.
+
+4. **Update Your README.md**: Include the following markers in your README.md file where you want the chart to appear:
+
+```markdown
+  <!-- CHART_START -->
+    *Chart will be dynamically inserted here.*
+  <!-- CHART_END -->
+```
 
 ### Yaml Configuration (`main.yml`)
 
-Inside the `main.yml` file, you can the set configurations
+The main.yml file contains the workflow configuration. Below is an example setup:
 
 ```yaml
   on:
@@ -39,25 +52,6 @@ Inside the `main.yml` file, you can the set configurations
           LIMIT: 365 # Limit - 100 to 1000, changing this may require modification to code below to fit the data
 ```
 
-## How It Works
-
-1. **Data Fetching**: The script fetches the latest crypto prices from CoinGecko's public DEX APIs.
-
-2. **Data Processing**: It formats the data and inserts it into the README between the `<!-- CHART_START -->` and `<!-- CHART_END -->` tags.
-
-```markdown
-  <!-- CHART_START -->
-    *Chart will be dynamically inserted here.*
-  <!-- CHART_END -->
-```
-
-3. **Automated Updates**: Using GitHub Actions, the script runs on a defined schedule (e.g., daily) to ensure the data remains current.
-
-## Customization
-
-- **Frequency**: Adjust the cron schedule in the workflow file to change how often the data updates.
-- **API Data**: Modify the script to fetch different data points or crypto pools as needed.
-
 ## Contributions
 
 Contributions are welcome! Please submit issues or pull requests with any improvements, new features, or bug fixes.
@@ -65,4 +59,3 @@ Contributions are welcome! Please submit issues or pull requests with any improv
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
