@@ -94,8 +94,8 @@ jobs:
           awk -v chart="$escaped_content" '
             BEGIN { inserted = 0 }
             /<!-- CHART_START -->/ {
+              print $0
               if (inserted == 0) {
-                print $0
                 print chart
                 in_chart = 1
                 inserted = 1
@@ -104,10 +104,11 @@ jobs:
             }
             (in_chart == 1 && inserted == 1) { next }
             /<!-- CHART_END -->/ {
+              print $0
               in_chart = 0
               next
             }
-          { print $0 }
+            { print $0 }
           ' README.md > "$temp_file"
 
           # Replace the original file with the new content
