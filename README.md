@@ -1,9 +1,9 @@
 # readme-crypto-price-chart
 
-This project provides a minimal implementation of live crypto price charts directly embedded in the README.md file. The prices are fetched from CoinGecko's free public APIs and automatically updated at regular intervals using GitHub workflows. The charts are rendered using mermaid.js, offering a dynamic visualization of cryptocurrency prices.
+This project provides a solution for displaying live cryptocurrency price charts directly in the README.md file. A GitHub Actions workflow, scheduled to run at specified intervals, fetches the latest crypto prices from CoinGecko's public DEX APIs. The .md file is then automatically updated to reflect these prices, visualized as dynamic charts rendered using mermaid.js. This setup provides an up-to-date view of cryptocurrency price trends, all within the project's README.md.
 
 <!-- CHART_START -->
-*Chart will be dynamically inserted here.*
+  *Chart will be dynamically inserted here.*
 <!-- CHART_END -->
 
 ## How to Set Up
@@ -41,14 +41,14 @@ Inside the `main.yml` file, you can the set configurations
 
 ## How It Works
 
-1. **Data Fetching**: The script fetches the latest crypto prices from CoinGecko's API.
+1. **Data Fetching**: The script fetches the latest crypto prices from CoinGecko's public DEX APIs.
 
 2. **Data Processing**: It formats the data and inserts it into the README between the `<!-- CHART_START -->` and `<!-- CHART_END -->` tags.
 
 ```markdown
-<!-- CHART_START -->
-*Chart will be dynamically inserted here.*
-<!-- CHART_END -->
+  <!-- CHART_START -->
+    *Chart will be dynamically inserted here.*
+  <!-- CHART_END -->
 ```
 
 3. **Automated Updates**: Using GitHub Actions, the script runs on a defined schedule (e.g., daily) to ensure the data remains current.

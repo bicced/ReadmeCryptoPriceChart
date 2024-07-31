@@ -1,8 +1,11 @@
 name: Update README with Crypto Price Chart
 
 on:
+  push:
+    branches:
+      - main
   schedule:
-    - cron: "* * * * *" # Runs once every 15 days at midnight
+    - cron: "0 0 1,15 * *" # Runs once every 15 days at midnight
 
 jobs:
   update-readme:
@@ -12,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Fetch Chart data
+      - name: Fetch chart data and update README
         env:
           TITLE: WETH-USDC # Title of the chart
           CHAIN: eth # Chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
