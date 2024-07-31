@@ -93,21 +93,23 @@ jobs:
           temp_file=$(mktemp)
           awk -v chart="$escaped_content" '
             BEGIN { inserted = 0 }
-            /<!-- CHART_START -->/ && inserted == 0 {
-              print $0
-              print chart
-              inserted = 1
+            /<!-- CHART_START -->/ {
+              if (inserted == 0) {
+                print $0
+                print chart
+                in_chart = 1
+                inserted = 1
+              }
               next
             }
-            /<!-- CHART_END -->/ && inserted == 1 {
-              print $0
-              inserted = 2
+            if (inserted && in_chart) {
               next
             }
-            inserted != 1 {
-              print $0
+            /<!-- CHART_END -->/ {
+              in_chart = 0
+              next
             }
-            inserted == 2 { exit }
+            print $0
           ' README.md > "$temp_file"
 
           # Replace the original file with the new content
