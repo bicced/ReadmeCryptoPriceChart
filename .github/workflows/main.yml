@@ -102,14 +102,14 @@ jobs:
               }
               next
             }
-            if (inserted && in_chart) {
-              next
-            }
+            (in_chart == 1 && inserted == 1) { next }
             /<!-- CHART_END -->/ {
               in_chart = 0
               next
             }
-            print $0
+            print {
+              $0
+            }
           ' README.md > "$temp_file"
 
           # Replace the original file with the new content
