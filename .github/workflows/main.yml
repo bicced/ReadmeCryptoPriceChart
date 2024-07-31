@@ -2,7 +2,7 @@ name: Update README with Crypto Price Chart
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs once every day at midnight
+    - cron: "* * * * *" # Runs once every 15 days at midnight
 
 jobs:
   update-readme:
