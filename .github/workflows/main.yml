@@ -2,7 +2,7 @@ name: Update README with Crypto Price Chart
 
 on:
   schedule:
-    - cron: "* * * * *" # Runs once every day at midnight
+    - cron: "0 0 * * *" # Runs once every day at midnight
 
 jobs:
   update-readme:
@@ -14,7 +14,7 @@ jobs:
 
       - name: Fetch Chart data
         env:
-          TITLE: WETH/USDC # Title of the chart
+          TITLE: WETH-USDC # Title of the chart
           CHAIN: eth # Chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
           POOL: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640" # Pool pair address
           TIMEFRAME: day # Timeframe - day/hour/minute
@@ -38,24 +38,32 @@ jobs:
           first_closes=()
           seen_months=()
 
-          # Format the dates as "Mon-YY" and filter for the first closing price of each month
+          # Format the dates as "M-1" for the 1st of each month, and "Mon-15" for the 15th of each month.
+          # Filter the data to capture the first closing price of each specified period.
           for i in "${!dates_array[@]}"; do
             date="${dates_array[$i]}"
             close="${closes_array[$i]}"
-            month_year=$(date -d @$date +%b-%y)
             day=$(date -d @$date +%d)
+            month=$(date -d @$date +%b)
 
             # Ensure `day` is treated as an integer, removing leading zeros
             day=$((10#$day))
 
-            # Check if this is the first occurrence of the month or an earlier date within the month
-            if [[ ! " ${seen_months[@]} " =~ " ${month_year} " ]]; then
-              formatted_dates+=("$month_year")
+            if [[ "$day" -eq 1 ]]; then
+              formatted_date="${month}-1"
+              full_date="1-$month"
+            elif [[ "$day" -eq 15 ]]; then
+              formatted_date="${month}-15"
+              full_date="15-$month"
+            else
+              continue
+            fi
+
+            # Check if this date (or the beginning of the period) has already been seen
+            if [[ ! " ${seen_dates[@]} " =~ " ${full_date} " ]]; then
+              formatted_dates+=("$formatted_date")
               first_closes+=("$close")
-              seen_months+=("$month_year")
-            elif [[ "$day" -eq 1 ]]; then
-              formatted_dates[-1]="$month_year"
-              first_closes[-1]="$close"
+              seen_dates+=("$full_date")
             fi
           done
 
