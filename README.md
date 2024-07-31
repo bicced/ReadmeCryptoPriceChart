@@ -1,4 +1,4 @@
-# readme-crypto-price-chart
+# Readme Crypto Price Chart
 
 Display live cryptocurrency price charts directly in the README.md file. 
 
