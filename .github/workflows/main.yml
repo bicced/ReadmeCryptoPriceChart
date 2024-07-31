@@ -1,0 +1,143 @@
+name: Update README with Crypto Price Chart
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 1,15 * *" # Runs once every 15 days at midnight
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Fetch chart data and update README
+        env:
+          TITLE: WETH-USDC # Title of the chart
+          CHAIN: eth # Chain - eth/bsc/polygon_pos/avax/movr/cro/one/boba/ftm/bch, check entire list: https://api.geckoterminal.com/api/v2/networks
+          POOL: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640" # Pool pair address
+          TIMEFRAME: day # Timeframe - day/hour/minute
+          AGGREGATE: 1 # Aggregate options - day: [1], hour: [1, 4, 12] minute: [1, 5, 15]
+          LIMIT: 365 # Limit - 100 to 1000, changing this may require modification to code below to fit the data
+        run: |
+          apiurl="https://api.geckoterminal.com/api/v2/networks/${CHAIN}/pools/${POOL}/ohlcv/${TIMEFRAME}?aggregate=${AGGREGATE}&limit=${LIMIT}"
+
+          echo "$apiurl"
+
+          response=$(curl -s "$apiurl")
+              
+          echo "Raw API response:"
+          echo "$response"
+
+          # Extracting dates and closing prices
+          dates_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[0]'))
+          closes_array=($(echo "$response" | jq -r '.data.attributes.ohlcv_list[] | .[4]'))
+
+          formatted_dates=()
+          first_closes=()
+          seen_months=()
+
+          # Format the dates as "M-1" for the 1st of each month, and "Mon-15" for the 15th of each month.
+          # Filter the data to capture the first closing price of each specified period.
+          for i in "${!dates_array[@]}"; do
+            date="${dates_array[$i]}"
+            close="${closes_array[$i]}"
+            day=$(date -d @$date +%d)
+            month=$(date -d @$date +%b)
+
+            # Ensure `day` is treated as an integer, removing leading zeros
+            day=$((10#$day))
+
+            if [[ "$day" -eq 1 ]]; then
+              formatted_date="${month}-1"
+              full_date="1-$month"
+            elif [[ "$day" -eq 15 ]]; then
+              formatted_date="${month}-15"
+              full_date="15-$month"
+            else
+              continue
+            fi
+
+            # Check if this date (or the beginning of the period) has already been seen
+            if [[ ! " ${seen_dates[@]} " =~ " ${full_date} " ]]; then
+              formatted_dates+=("$formatted_date")
+              first_closes+=("$close")
+              seen_dates+=("$full_date")
+            fi
+          done
+
+          # Reverse the arrays to show oldest dates first
+          formatted_dates=($(printf "%s\n" "${formatted_dates[@]}" | tac))
+          first_closes=($(printf "%s\n" "${first_closes[@]}" | tac))
+
+          # Join the formatted dates and first closing prices into comma-separated strings
+          dates=$(printf "%s," "${formatted_dates[@]}")
+          dates=${dates%,} # Remove the trailing comma
+
+          closes=$(printf "%s," "${first_closes[@]}")
+          closes=${closes%,} # Remove the trailing comma
+
+          # Calculate min and max close prices for y-axis range
+          min_close=$(echo "$closes" | tr ',' '\n' | sort -n | head -n1)
+          max_close=$(echo "$closes" | tr ',' '\n' | sort -n | tail -n1)
+
+          # Generate the chart content
+          chart_content=$(cat <<EOF
+          \`\`\`mermaid
+          xychart-beta
+            title "$TITLE"
+            x-axis [$dates]
+            y-axis "Closing Prices" $min_close --> $max_close
+            line [$closes]
+          \`\`\`
+          EOF
+          )
+
+          # Escape special characters in chart_content
+          escaped_content=$(printf '%s\n' "$chart_content" | sed -e 's/[\/&]/\\&/g')
+
+          # Create a temporary file with the new content
+          temp_file=$(mktemp)
+          awk -v chart="$escaped_content" '
+            BEGIN { 
+              inserted = 0 
+              in_chart = 0
+            }
+            /<!-- CHART_START -->/ {
+              print $0
+              if (inserted == 0) {
+                print chart
+                in_chart = 1
+                inserted = 1
+              }
+              next
+            }
+            /<!-- CHART_END -->/ {
+              print $0
+              in_chart = 0
+              next
+            }
+            (in_chart == 1 && inserted == 1) { next }
+            { print $0 }
+          ' README.md > "$temp_file"
+
+          # Replace the original file with the new content
+          mv "$temp_file" README.md
+
+          echo "Content of README after update:"
+          cat README.md
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add README.md
+          git commit -m "Update README with latest DEX data" || echo "No changes to commit"
+          git push
