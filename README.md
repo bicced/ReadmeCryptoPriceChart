@@ -1,6 +1,6 @@
 # readme-crypto-price-chart
 
-A minimal implementation for live crypto price charts embedded directly in your README. The prices are sourced from CoinGecko's free public APIs and periodically updated using GitHub workflows. The chart is constructed using mermaid.js
+This project provides a minimal implementation of live crypto price charts directly embedded in the README.md file. The prices are fetched from CoinGecko's free public APIs and automatically updated at regular intervals using GitHub workflows. The charts are rendered using mermaid.js, offering a dynamic visualization of cryptocurrency prices.
 
 <!-- CHART_START -->
 *Chart will be dynamically inserted here.*
