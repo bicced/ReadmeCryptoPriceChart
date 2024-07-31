@@ -105,12 +105,12 @@ jobs:
               }
               next
             }
-            (in_chart == 1 && inserted == 1) { next }
             /<!-- CHART_END -->/ {
               print $0
               in_chart = 0
               next
             }
+            (in_chart == 1 && inserted == 1) { next }
             { print $0 }
           ' README.md > "$temp_file"
 
